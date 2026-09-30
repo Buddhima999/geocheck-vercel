@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GeoCheck</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231f4e79' d='M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8a1 1 0 0 0 1.4 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8a1 1 0 0 0 1.4 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>GeoCheck</h1>
+        <p>FDP &amp; customer location audit</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <select id="uploadSelect" title="Switch between uploads"></select>
+      <button class="btn btn-danger" id="deleteBtn" title="Delete the selected upload" disabled>Delete</button>
+      <button class="btn" id="uploadBtn">Upload CSV</button>
+      <button class="btn btn-ghost" id="settingsBtn">Thresholds</button>
+      <input type="file" id="fileInput" accept=".csv" hidden>
+    </div>
+  </header>
+
+  <div class="geocode-banner" id="geocodeBanner" hidden>
+    <div class="geocode-banner-text" id="geocodeBannerText"></div>
+    <div class="geocode-banner-track"><div class="geocode-banner-fill" id="geocodeBannerFill"></div></div>
+  </div>
+
+  <div id="qualityBanner"></div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="page1">FDP &rarr; Customer Analysis</button>
+    <button class="tab" data-tab="page2">Customer Analysis</button>
+  </nav>
+
+  <main id="app">
+    <section id="panel-page1" class="panel active"></section>
+    <section id="panel-page2" class="panel"></section>
+  </main>
+
+  <!-- Column mapping dialog -->
+  <div class="modal-backdrop" id="mappingModal" hidden>
+    <div class="modal">
+      <h2>Match your columns</h2>
+      <p class="sub" id="mappingSub"></p>
+      <div id="mappingFields" class="mapping-grid"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="mappingCancel">Cancel</button>
+        <button class="btn" id="mappingConfirm">Run analysis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings dialog -->
+  <div class="modal-backdrop" id="settingsModal" hidden>
+    <div class="modal">
+      <h2>Thresholds</h2>
+      <p class="sub">Changes apply immediately to whatever upload is currently loaded.</p>
+      <label class="field">
+        <span>Overhead distance limit (customer &harr; FDP, straight line, metres)</span>
+        <input type="number" id="setOverhead" min="1" step="1">
+      </label>
+      <label class="field">
+        <span>Line distance limit (recorded cable length, metres)</span>
+        <input type="number" id="setLine" min="1" step="1">
+      </label>
+      <label class="field">
+        <span>Address match tolerance (metres)</span>
+        <input type="number" id="setAddress" min="1" step="1">
+      </label>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="settingsCancel">Cancel</button>
+        <button class="btn" id="settingsSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation dialog -->
+  <div class="modal-backdrop" id="deleteModal" hidden>
+    <div class="modal">
+      <h2>Delete this upload?</h2>
+      <p class="sub" id="deleteSub"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="deleteCancel">Cancel</button>
+        <button class="btn btn-danger" id="deleteConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map dialog -->
+  <div class="modal-backdrop" id="mapModal" hidden>
+    <div class="modal modal-wide">
+      <div class="modal-head-row">
+        <h2 id="mapModalTitle">Location</h2>
+        <button class="btn-icon" id="mapModalClose">&times;</button>
+      </div>
+      <p class="sub" id="mapModalSub"></p>
+      <div id="mapCanvas" class="map-canvas"></div>
+      <div id="mapLegend" class="map-legend"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/maps.js"></script>
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

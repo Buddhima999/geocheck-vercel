@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+geocheck.db
+
+# Local configuration, runtime files, and archives
+.env.*
+!.env.example
+.runtime/
+.pytest_cache/
+*.log
+*.zip
+.vercel/

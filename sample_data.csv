@@ -1,0 +1,10 @@
+customer_id,customer_name,address,cust_lat,cust_lon,fdp_id,fdp_lat,fdp_lon,line_distance_m
+C1001,W.A. Perera,"12 Galle Rd, Colombo 03",6.9273,79.8615,FDP-CMB-04,6.9271,79.8612,46
+C1002,S.K. Fernando,"221 Kandy Rd, Kadawatha",6.9840,79.9490,FDP-CMB-04,6.9271,79.8612,650
+C1003,N.D. Silva,"8 Temple Lane, Nugegoda",6.8720,79.8890,FDP-NGD-02,6.8715,79.8885,90
+C1004,R.M. Bandara,"22 Lake Rd, Kurunegala",7.4880,80.3660,FDP-KUR-01,7.4867,80.3647,120
+C1005,K.P. Jayawardena,"5 Park St, Negombo",7.2083,79.8358,FDP-NEG-03,7.2081,79.8355,46
+C1006,T.L. Herath,"Reservoir Rd, Rantembe",7.20000,80.92500,FDP-RAN-01,7.19950,80.92450,80
+C1007,M.G. Rathnayake,"Offshore test point",7.0,84.0,FDP-CMB-04,6.9271,79.8612,900
+C1008,D.S. Wickramasinghe,"33 Sea View, Galle",6.0367,80.2170,FDP-GAL-02,6.0410,80.2210,110
+C1009,A.B. Gunasekara,"77 Main St, Kandy",7.2906,80.6337,FDP-KDY-01,7.2915,80.6340,121

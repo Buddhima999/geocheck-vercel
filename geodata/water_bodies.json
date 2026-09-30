@@ -1,0 +1,21 @@
+{
+  "_note": "Approximate circles for Sri Lanka's largest lakes/reservoirs/lagoons, used as a coarse 'sitting on a known water body' check. Center coordinates are sourced from Wikipedia infoboxes; radius_m is derived from published surface area (radius = sqrt(area/pi)) and capped conservatively for elongated/irregular bodies. This list is NOT exhaustive - small tanks, rivers, and unlisted ponds are not covered. Extend this file with more entries (name, lat, lon, radius_m) as needed.",
+  "bodies": [
+    { "name": "Victoria Reservoir", "lat": 7.24139, "lon": 80.78472, "radius_m": 2500 },
+    { "name": "Randenigala Reservoir", "lat": 7.20000, "lon": 80.92500, "radius_m": 2100 },
+    { "name": "Kotmale Reservoir", "lat": 7.06083, "lon": 80.59722, "radius_m": 1500 },
+    { "name": "Parakrama Samudra", "lat": 7.90000, "lon": 80.96700, "radius_m": 2700 },
+    { "name": "Kandalama Reservoir", "lat": 7.87722, "lon": 80.70000, "radius_m": 1200 },
+    { "name": "Minneriya Tank", "lat": 8.03300, "lon": 80.88300, "radius_m": 2500 },
+    { "name": "Kantale Reservoir", "lat": 8.36111, "lon": 80.99139, "radius_m": 2000 },
+    { "name": "Udawalawe Reservoir", "lat": 6.43389, "lon": 80.85417, "radius_m": 3000 },
+    { "name": "Inginimitiya Reservoir", "lat": 7.94444, "lon": 80.13167, "radius_m": 1500 },
+    { "name": "Ratkinda Reservoir", "lat": 7.50833, "lon": 81.05667, "radius_m": 1200 },
+    { "name": "Deduru Oya Reservoir", "lat": 7.71833, "lon": 80.27444, "radius_m": 1500 },
+    { "name": "Samanalawewa Reservoir", "lat": 6.68167, "lon": 80.79833, "radius_m": 1500 },
+    { "name": "Kalawewa", "lat": 8.02000, "lon": 80.50000, "radius_m": 2400 },
+    { "name": "Negombo Lagoon", "lat": 7.15000, "lon": 79.85000, "radius_m": 3300 },
+    { "name": "Bolgoda Lake", "lat": 6.77000, "lon": 79.91000, "radius_m": 3000 },
+    { "name": "Beira Lake", "lat": 6.92700, "lon": 79.84900, "radius_m": 500 }
+  ]
+}
