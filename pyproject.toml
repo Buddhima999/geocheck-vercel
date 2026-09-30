@@ -1,0 +1,4 @@
+# Vercel loads the existing FastAPI app from backend/main.py.
+# Python dependencies remain in requirements.txt.
+[tool.vercel]
+entrypoint = "backend.main:app"

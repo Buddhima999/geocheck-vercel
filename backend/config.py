@@ -31,6 +31,9 @@ MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME", "geocheck")
 
 # Upload limits (kept small/simple; adjust if you need bigger CSVs)
 MAX_UPLOAD_ROWS = int(os.environ.get("MAX_UPLOAD_ROWS", "5000"))
+MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", "3000000"))
+if not 1 <= MAX_UPLOAD_BYTES <= 3000000:
+    raise ValueError("MAX_UPLOAD_BYTES must be between 1 and 3000000")
 
 # Default thresholds (metres), used the first time the app runs.
 DEFAULT_OVERHEAD_THRESHOLD_M = float(os.environ.get("DEFAULT_OVERHEAD_THRESHOLD_M", "500"))

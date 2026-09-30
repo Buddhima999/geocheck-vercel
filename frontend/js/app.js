@@ -75,6 +75,11 @@ $("#fileInput").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   e.target.value = "";
   if (!file) return;
+  const maxBytes = state.config.max_upload_bytes || 3000000;
+  if (file.size > maxBytes) {
+    toast(`CSV is too large. Maximum size is ${(maxBytes / 1000000).toFixed(1)} MB. Split it into smaller files.`);
+    return;
+  }
   const fd = new FormData();
   fd.append("file", file);
   try {
@@ -133,7 +138,6 @@ $("#mappingConfirm").addEventListener("click", async () => {
     await refreshUploadList();
     $("#uploadSelect").value = String(result.upload_id);
     await loadUpload(result.upload_id);
-    if (result.pending_geocode_count > 0) pollGeocoding(result.upload_id, result.pending_geocode_count);
   } catch (err) {
     toast("Couldn't run analysis: " + err.message);
   }
@@ -146,27 +150,53 @@ function showGeocodeBanner(text, pct) {
 }
 function hideGeocodeBanner() { $("#geocodeBanner").hidden = true; }
 
-async function pollGeocoding(uploadId, total) {
+let geocodeGeneration = 0;
+let geocodeTimer = null;
+function stopGeocoding() {
+  geocodeGeneration++;
+  clearTimeout(geocodeTimer);
+  hideGeocodeBanner();
+}
+
+function pollGeocoding(uploadId) {
+  stopGeocoding();
+  const generation = geocodeGeneration;
+  const current = () => generation === geocodeGeneration && state.currentUploadId === uploadId;
+  let completedBatch = false;
+  let failures = 0;
   const tick = async () => {
-    if (state.currentUploadId !== uploadId) return; // user switched away
+    if (!current()) return;
+    let delay = 1500;
     try {
-      const s = await Api.get(`/api/uploads/${uploadId}/status`);
-      if (s.geocode_pending > 0) {
-        const pct = s.with_address > 0 ? Math.round((s.geocode_done / s.with_address) * 100) : 0;
-        showGeocodeBanner(
-          `Geocoding addresses via ${providerLabel()}: ${s.geocode_done}/${s.with_address} done${state.config.geocoding_provider === "nominatim" ? " (~1/second, free)" : ""}…`,
-          pct
-        );
-        setTimeout(tick, 2500);
-      } else {
-        hideGeocodeBanner();
-        toast("Address geocoding complete.");
+      const s = await Api.post(`/api/uploads/${uploadId}/geocode-batch`);
+      if (!current()) return;
+      failures = 0;
+      completedBatch = completedBatch || s.processed > 0;
+      if (s.processed > 0) await loadPage2(uploadId);
+      if (!current()) return;
+      if (s.geocode_pending <= 0) {
         await loadPage2(uploadId);
+        if (!current()) return;
+        hideGeocodeBanner();
+        if (completedBatch) toast("Address checks finished. Review the table for matches or geocoding errors.");
+        return;
       }
-    } catch (e) { /* ignore transient errors while polling */ }
+      const pct = s.with_address > 0 ? Math.round((s.geocode_done / s.with_address) * 100) : 0;
+      showGeocodeBanner(
+        `Checking addresses via ${providerLabel()}: ${s.geocode_done}/${s.with_address} done. Keep this upload open; reopening it resumes unfinished checks.`, pct
+      );
+      delay = s.retry_after_ms || 1500;
+    } catch (e) {
+      if (!current()) return;
+      if (e.status === 404) { hideGeocodeBanner(); return; }
+      failures++;
+      delay = Math.min(30000, 2000 * (2 ** Math.min(failures, 4)));
+      showGeocodeBanner("Address checking interrupted. Saved progress is safe; retrying shortly...", 0);
+    }
+    if (current()) geocodeTimer = setTimeout(tick, delay);
   };
-  showGeocodeBanner(`Geocoding addresses via ${providerLabel()}: 0/${total} done…`, 0);
-  setTimeout(tick, 1500);
+  showGeocodeBanner("Checking saved address progress...", 0);
+  geocodeTimer = setTimeout(tick, 0);
 }
 
 // ------------------------------------------------------------ uploads list
@@ -225,6 +255,7 @@ $("#deleteConfirm").addEventListener("click", async () => {
       $("#uploadSelect").value = String(uploads[0].id);
       await loadUpload(uploads[0].id);
     } else {
+      stopGeocoding();
       state.currentUploadId = null;
       $("#panel-page1").innerHTML = "";
       $("#panel-page1").appendChild(renderEmptyHero());
@@ -237,8 +268,10 @@ $("#deleteConfirm").addEventListener("click", async () => {
 });
 
 async function loadUpload(uploadId) {
+  stopGeocoding();
   state.currentUploadId = uploadId;
   await Promise.all([loadPage1(uploadId), loadPage2(uploadId), loadQuality(uploadId)]);
+  if (state.currentUploadId === uploadId) pollGeocoding(uploadId);
 }
 
 // ------------------------------------------------------------ data quality
@@ -307,12 +340,15 @@ $("#settingsSave").addEventListener("click", async () => {
 async function loadPage1(uploadId) {
   const panel = $("#panel-page1");
   try {
-    const data = await Api.get(`/api/uploads/${uploadId}/page1`);
+    const data = await Api.analysis(`/api/uploads/${uploadId}/page1`, 1, () => state.currentUploadId === uploadId);
+    if (!data) return;
+    if (state.currentUploadId !== uploadId) return;
     state.page1 = data;
     renderPage1(data);
   } catch (err) {
+    if (state.currentUploadId !== uploadId) return;
     panel.innerHTML = "";
-    panel.appendChild(renderEmptyHero());
+    panel.appendChild(el("p", { class: "sub", role: "alert" }, ["Could not load all results: " + err.message]));
   }
 }
 
@@ -401,12 +437,15 @@ function renderFdpCard(fdp, rejected) {
 async function loadPage2(uploadId) {
   const panel = $("#panel-page2");
   try {
-    const data = await Api.get(`/api/uploads/${uploadId}/page2`);
+    const data = await Api.analysis(`/api/uploads/${uploadId}/page2`, 2, () => state.currentUploadId === uploadId);
+    if (!data) return;
+    if (state.currentUploadId !== uploadId) return;
     state.page2 = data;
     renderPage2(data);
   } catch (err) {
+    if (state.currentUploadId !== uploadId) return;
     panel.innerHTML = "";
-    panel.appendChild(renderEmptyHero());
+    panel.appendChild(el("p", { class: "sub", role: "alert" }, ["Could not load all results: " + err.message]));
   }
 }
 

@@ -127,8 +127,8 @@ tried, rather than failing confusingly on the first upload.
    actually wrong; a clean CSV shows nothing. This is separate from the
    Sri-Lanka/water-body check below, which is about a *valid* point that
    happens to be in the wrong place, not bad data.
-2. Addresses (if mapped) are geocoded automatically in the background right
-   after upload - a progress banner shows how far along it is. Each address
+2. Addresses (if mapped) are geocoded automatically in small batches while
+   the upload is open - a progress banner shows how far along it is. Each address
    gets located, then matched to its road (see "the address match" below),
    and the result is cached, so re-viewing the page never re-runs (or
    re-bills, if using Google) the lookup.
@@ -181,7 +181,7 @@ the check actually used.
 
 ## Data storage
 
-Everything lives in MongoDB, in four collections: `uploads`, `fdps`,
+Confirmed data lives in MongoDB, in four collections: `uploads`, `fdps`,
 `customers` (which also holds cached geocode results), and `settings` (a
 single document with your current thresholds). Nothing is deleted when you
 upload a new CSV - old uploads stay selectable from the dropdown. To remove
@@ -189,14 +189,73 @@ an upload (its CSV record, FDPs and customers) from the database, select it
 in the dropdown and hit **Delete**. Point `MONGO_URI`/`MONGO_DB_NAME` in
 `.env` at whichever database you want to use.
 
+A fifth collection, `pending_uploads`, stores CSV previews while you match
+columns. Each preview contains a random token (`_id`), filename, headers,
+rows, `created_at`, and `expires_at`. It survives backend restarts and can
+be confirmed by another server instance. Confirm within 30 minutes;
+expired tokens are rejected immediately, and MongoDB's TTL index removes
+expired previews in the background. Confirmation atomically consumes the
+token, so it cannot be reused. Invalid mapping JSON or missing required
+mappings do not consume the preview. Confirmed upload records do not expire.
+
+The database account must be able to create indexes: startup creates the
+`pending_uploads.expires_at` TTL index and a customer upload/status index.
+
+A sixth collection, `geocoding_locks`, coordinates OpenStreetMap requests
+across uploads and server instances that share this database. The `nominatim`
+document stores a temporary `owner` token and `available_at` time. Uploads
+also have temporary `geocode_lease_owner` and `geocode_lease_until` fields;
+a pending customer has `geocode_attempt_owner` during processing. These
+prevent overlapping work and allow abandoned work to resume after 120 seconds.
+
+## Resumable address processing
+
+`POST /api/uploads/{upload_id}/geocode-batch` processes at most one pending
+customer (up to two provider lookups: address, then road). It returns saved
+progress plus a retry delay. Upload confirmation only saves data; the page
+requests batches sequentially, refreshes results, and retries transient request
+failures with a delay. Provider results such as `error` or `not_found` remain
+visible in the table and are not automatically retried, as before.
+
+Keep the selected upload open to continue. Closing the browser or switching
+uploads stops requesting new work; an in-flight request may finish. Reopening
+an upload resumes pending rows automatically. This is browser-driven processing,
+not an always-running background worker. Finished rows are not geocoded again.
+If a server stops after calling a provider but before saving, that unfinished
+row may need another provider call after the lease expires.
+
+Distance calculations, road matching, fallback behavior, and suitability rules
+are unchanged. Deployment on Vercel still needs to be verified with a real build and hosted smoke test.
+
 ## Limits
 
-Uploads are capped at 5,000 rows by default (`MAX_UPLOAD_ROWS` in `.env`).
-Geocoding runs as a background job right after upload, and does up to two
+Uploads are capped at 5,000 rows (`MAX_UPLOAD_ROWS`) and 3,000,000 bytes
+(`MAX_UPLOAD_BYTES`) by default. The byte limit may be lowered, but cannot
+exceed 3,000,000, leaving room for multipart overhead below Vercel's request
+limit. Both browser and backend reject oversized files; split them into
+smaller CSVs. Limits also apply to exceptionally wide/long records: at most
+64 columns, 256 characters per header/filename, 4096 characters per cell,
+and 100,000 UTF-8 JSON bytes per parsed row. Nothing is silently truncated.
+CSV previews show up to five sample rows within a 400,000-byte sample budget.
+
+Both analysis endpoints now return cursor pages: `?limit=100&after=<cursor>`
+(default 100 customers, maximum 200). Follow `next_cursor` while `has_more`
+is true. Response pages stay below 512,000 bytes, so a page may contain fewer
+customers than requested. Page 1 splits large FDP customer lists across pages.
+The frontend merges FDPs by ID and loads all pages before rendering tables
+and percentages. Threshold changes detected during loading produce a refresh
+message rather than totals calculated using mixed settings. External API
+consumers must also follow pagination; one request no longer returns all rows.
+A single unusually large legacy record returns a clear 413 error instead of
+truncating it. Other JSON responses have a final 4,000,000-byte safety cap.
+
+The browser still holds/renders the full loaded dataset; this is network
+pagination, not virtual scrolling. Large uploads can take longer to display.
+Geocoding runs in short requests while the upload is open, and does up to two
 lookups per address (the address itself, then its road - see "the address
 match" above). With the default free OpenStreetMap provider each of those is
 paced at ~1 request/second (policy-required, not adjustable), so budget
-roughly 2 seconds per address; with a Google key configured, both are
+at least a few seconds per address, plus network time; with a Google key configured, both are
 billable Google Geocoding API calls with no artificial pacing.
 
 ## Hosting this on AWS
