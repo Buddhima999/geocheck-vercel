@@ -37,4 +37,4 @@ DEFAULT_OVERHEAD_THRESHOLD_M = float(os.environ.get("DEFAULT_OVERHEAD_THRESHOLD_
 DEFAULT_LINE_THRESHOLD_M = float(os.environ.get("DEFAULT_LINE_THRESHOLD_M", "500"))
 DEFAULT_ADDRESS_TOLERANCE_M = float(os.environ.get("DEFAULT_ADDRESS_TOLERANCE_M", "500"))
 
-GEODATA_DIR = BASE_DIR / "geodata"
+GEODATA_DIR = Path(__file__).resolve().parent / "geodata"

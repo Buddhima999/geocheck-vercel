@@ -4,9 +4,9 @@ A point is REJECTED if either:
   - it falls outside Sri Lanka's land boundary (i.e. in the sea, or in
     another country), or
   - it falls inside one of the known major lakes/reservoirs/lagoons listed
-    in geodata/water_bodies.json.
+    in backend/geodata/water_bodies.json.
 
-This is intentionally a coarse, approximate check (see geodata/water_bodies.json
+This is intentionally a coarse, approximate check (see backend/geodata/water_bodies.json
 for caveats) - it will not catch every small pond, tank or river, only the
 big/obvious mistakes: a point plotted in the ocean, well outside the island,
 or inside one of Sri Lanka's largest reservoirs/lagoons.

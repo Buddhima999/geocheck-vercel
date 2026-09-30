@@ -153,7 +153,7 @@ tried, rather than failing confusingly on the first upload.
 **On the land/water check:** this uses a real Sri Lanka coastline polygon
 (so it's meaningfully more accurate than a simple bounding box) plus a
 curated list of the island's largest reservoirs, tanks and lagoons
-(`geodata/water_bodies.json`) as circles. It is **not exhaustive** - small
+(`backend/geodata/water_bodies.json`) as circles. It is **not exhaustive** - small
 ponds, tanks, and rivers aren't covered, only the island's outline and its
 biggest known water bodies. Add more entries to that JSON file (name, lat,
 lon, radius_m) if you find gaps.
