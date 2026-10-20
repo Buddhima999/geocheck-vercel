@@ -364,19 +364,19 @@ function renderPage1(data) {
   const linePass = lineApplicable.filter((c) => c.line.passed);
 
   panel.appendChild(el("div", { class: "stat-grid" }, [
-    statCard("FDPs on land, in Sri Lanka", data.ok_fdps.length, allFdps.length, `${data.ok_fdps.length} of ${allFdps.length} FDPs`),
+    statCard("FDPs inside Sri Lanka", data.ok_fdps.length, allFdps.length, `${data.ok_fdps.length} of ${allFdps.length} FDPs`),
     statCard("Overhead distance within limit", overheadPass.length, overheadApplicable.length, `${overheadPass.length} of ${overheadApplicable.length} customers checked`),
     statCard("Line distance within limit", linePass.length, lineApplicable.length,
       lineApplicable.length ? `${linePass.length} of ${lineApplicable.length} customers checked` : "No line-distance column uploaded"),
   ]));
 
   panel.appendChild(el("div", { class: "section-title" }, [
-    "FDPs on land, in Sri Lanka", el("span", { class: "count" }, [String(data.ok_fdps.length)]),
+    "FDPs inside Sri Lanka", el("span", { class: "count" }, [String(data.ok_fdps.length)]),
   ]));
   for (const fdp of data.ok_fdps) panel.appendChild(renderFdpCard(fdp, false));
 
   panel.appendChild(el("div", { class: "section-title rejected" }, [
-    "Rejected FDPs (outside Sri Lanka or on a known water body)", el("span", { class: "count" }, [String(data.rejected_fdps.length)]),
+    "Rejected FDPs (outside Sri Lanka)", el("span", { class: "count" }, [String(data.rejected_fdps.length)]),
   ]));
   if (!data.rejected_fdps.length) panel.appendChild(el("p", { class: "sub" }, ["None."]));
   for (const fdp of data.rejected_fdps) panel.appendChild(renderFdpCard(fdp, true));
@@ -458,7 +458,7 @@ function renderPage2(data) {
   const matchPass = matchApplicable.filter((c) => c.address_match.passed);
 
   panel.appendChild(el("div", { class: "stat-grid" }, [
-    statCard("Customers on land, in Sri Lanka", data.ok_customers.length, allCustomers.length, `${data.ok_customers.length} of ${allCustomers.length} customers`),
+    statCard("Customers inside Sri Lanka", data.ok_customers.length, allCustomers.length, `${data.ok_customers.length} of ${allCustomers.length} customers`),
     statCard("Within road distance of address", matchPass.length, matchApplicable.length,
       matchApplicable.length ? `${matchPass.length} of ${matchApplicable.length} geocoded` : "No addresses geocoded yet"),
   ]));
@@ -468,12 +468,12 @@ function renderPage2(data) {
   ]));
 
   panel.appendChild(el("div", { class: "section-title" }, [
-    "Customers on land, in Sri Lanka", el("span", { class: "count" }, [String(data.ok_customers.length)]),
+    "Customers inside Sri Lanka", el("span", { class: "count" }, [String(data.ok_customers.length)]),
   ]));
   panel.appendChild(renderCustomerTable(data.ok_customers, false));
 
   panel.appendChild(el("div", { class: "section-title rejected" }, [
-    "Rejected customers (outside Sri Lanka or on a known water body)", el("span", { class: "count" }, [String(data.rejected_customers.length)]),
+    "Rejected customers (outside Sri Lanka)", el("span", { class: "count" }, [String(data.rejected_customers.length)]),
   ]));
   if (!data.rejected_customers.length) panel.appendChild(el("p", { class: "sub" }, ["None."]));
   else panel.appendChild(renderCustomerTable(data.rejected_customers, true));

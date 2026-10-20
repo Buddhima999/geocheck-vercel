@@ -4,11 +4,10 @@ A CSV-based QC tool for fiber ISP field engineers, split into two pages:
 
 - **FDP → Customer Analysis** — checks each customer's overhead (straight-line)
   distance and line (recorded cable) distance to its FDP, and rejects any FDP
-  that sits outside Sri Lanka or on a known water body.
+  that sits outside Sri Lanka.
 - **Customer Analysis** — geocodes each customer's address with Google and
   compares it to their uploaded coordinates (with a percentage-of-tolerance
-  score), and rejects any customer whose own coordinates are outside Sri Lanka
-  or on a known water body.
+  score), and rejects any customer whose own coordinates are outside Sri Lanka.
 
 Click any customer's **View on map** link to see it plotted on Google Maps -
 customer + FDP with a line between them on page 1, or the geocoded address as
@@ -125,7 +124,7 @@ tried, rather than failing confusingly on the first upload.
    **Data quality** card appears above the tabs listing exactly how many rows
    and which ones (by ID where available). It only shows up when something's
    actually wrong; a clean CSV shows nothing. This is separate from the
-   Sri-Lanka/water-body check below, which is about a *valid* point that
+   Sri-Lanka check below, which is about a *valid* point that
    happens to be in the wrong place, not bad data.
 2. Addresses (if mapped) are geocoded automatically in small batches while
    the upload is open - a progress banner shows how far along it is. Each address
@@ -146,17 +145,13 @@ tried, rather than failing confusingly on the first upload.
 |---|---|---|
 | Overhead distance (straight-line, customer↔FDP) over limit | 500 m | Page 1 |
 | Line distance (your CSV's recorded cable length) over limit | 500 m | Page 1 |
-| FDP outside Sri Lanka or on a known water body → FDP rejected | Sri Lanka boundary + major lakes/reservoirs | Page 1 |
+| FDP outside Sri Lanka  → FDP rejected | Sri Lanka boundary + major lakes/reservoirs | Page 1 |
 | Customer's address doesn't match their uploaded coordinates | 500 m tolerance | Page 2 |
-| Customer outside Sri Lanka or on a known water body → customer rejected | Sri Lanka boundary + major lakes/reservoirs | Page 2 |
+| Customer outside Sri Lanka  → customer rejected | Sri Lanka boundary + major lakes/reservoirs | Page 2 |
 
-**On the land/water check:** this uses a real Sri Lanka coastline polygon
-(so it's meaningfully more accurate than a simple bounding box) plus a
-curated list of the island's largest reservoirs, tanks and lagoons
-(`backend/geodata/water_bodies.json`) as circles. It is **not exhaustive** - small
-ponds, tanks, and rivers aren't covered, only the island's outline and its
-biggest known water bodies. Add more entries to that JSON file (name, lat,
-lon, radius_m) if you find gaps.
+   **On the Sri Lanka check:** this uses a real Sri Lanka coastline polygon
+   (`backend/geodata/sri_lanka_boundary.geojson`). A point outside it, in the
+   sea or in another country, is rejected. Lakes and reservoirs are not checked.
 
 **On the address match - it's a "top down" check, not a rooftop-pinpoint one:**
 rooftop-level geocoding (free or paid) is often a house or two off, so this
